@@ -3,7 +3,6 @@
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
 [![Build Status][ico-travis]][link-travis]
-[![StyleCI][ico-styleci]][link-styleci]
 
 A repository pattern implementation for Laravel Framework
 
@@ -94,6 +93,9 @@ try {
 }
 ```
 
+### Learn more 
+Check out our [wiki](https://github.com/bigpaulie/repository/wiki)
+
 ## Change log
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.
@@ -131,3 +133,4 @@ license. Please see the [license file](license.md) for more information.
 [link-styleci]: https://styleci.io/repos/12345678
 [link-author]: https://github.com/bigpaulie
 [link-contributors]: ../../contributors
+[link-wiki]: https://github.com/bigpaulie/repository/wiki
