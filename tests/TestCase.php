@@ -16,7 +16,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         with(new PersonMigration())->up();
     }
 
-    protected function setUp():void
+    protected function setUp(): void
     {
         with(new PersonSeeder())->run();
     }
