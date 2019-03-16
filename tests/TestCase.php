@@ -11,7 +11,7 @@ use bigpaulie\repository\tests\bootstrap\seeders\PersonSeeder;
  */
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass():void
     {
         with(new PersonMigration())->up();
     }
