@@ -38,9 +38,9 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/repository.php', 'repository');
 
         // Register the service the package provides.
-        $this->app->singleton('repository', function ($app) {
-            return new Repository;
-        });
+        // $this->app->singleton('repository', function ($app) {
+        //    return new Repository;
+        // });
     }
 
     /**
