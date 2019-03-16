@@ -17,7 +17,7 @@ class PersonRepositoryTest extends TestCase
      */
     private $repository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new PersonRepository();
