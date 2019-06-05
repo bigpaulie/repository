@@ -7,6 +7,7 @@ use bigpaulie\repository\Contracts\RepositoryInterface;
 use bigpaulie\repository\Exceptions\RepositoryException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 
 /**
  * Class AbstractRepository
@@ -68,7 +69,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $resource->saveOrFail();
             return $resource;
         } catch (\Throwable $e) {
-            throw new RepositoryException($e->getMessage(), $e->getCode(), $e);
+            throw new RepositoryException($e->getMessage(), 500, $e);
         }
     }
 
@@ -90,7 +91,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
             return $model;
         } catch (\Throwable $e) {
-            throw new RepositoryException($e->getMessage(), $e->getCode(), $e);
+            throw new RepositoryException($e->getMessage(), 500, $e);
         }
     }
 
@@ -107,7 +108,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $this->find($id)->delete();
             return true;
         } catch (\Exception $e) {
-            throw new RepositoryException($e->getMessage(), $e->getCode(), $e);
+            throw new RepositoryException($e->getMessage(), 500, $e);
         }
     }
 }
