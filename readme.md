@@ -14,47 +14,59 @@ Via Composer
 $ composer require bigpaulie/repository
 ```
 
-## Usage
-A repository class is any class that extends \bigpaulie\repository\AbstractRepository
-
-The general rule of thumb is to name your repository **Model**Repository here is an example, the Person model will have a PersonRepository.
-
-```php
-class PersonRepository extends AbstractRepository
-{
-    /**
-     * @return string
-     */
-    protected static function getModel(): string
-    {
-        return Person::class;
-    }
-}
+Publish the configuration file
+```bash
+$ php artisan vendor:publish --provider=bigpaulie\\repository\\RepositoryServiceProvider --tag=repository.config
 ```
 
+## Compatibility
+|package version|laravel version|
+|---------------|---------------|
+|2.x            | 6.9 or newer  |
+|1.x            | 5.x           |
+
+## Usage
+A repository class is any class that extends bigpaulie\repository\AbstractRepository
+
+The general rule of thumb is that your repository should have the same name as your model by with a suffix of "Repository".
+
+Let's say we have the following case, we have a model named Person, than the repository class should be named PersonRepository
+
+```php
+class PersonRepository extends AbstractRepository {}
+```
+
+## Generating repositories using artisan commands
+You can generate a repository for your model using the provided artisan command
+```shell script
+php artisan repository:generate Person
+```
+The above command will generate a repository class called PersonRepository.
+
 ### Find
+Find a specific resource by it's ID
+
 ```php
 /** @var PersonRepository $repository */
 $repository = new PersonRepository();
 
-try {
-    /** @var Person $person */
-    $person = $repository->find(1);
-} catch (RepositoryException $exception) {
-    // do something if model is not found
-}
+/** @var Person|null $person */
+$person = $repository->find(1);
 ```
 
 ### Get all 
+Get all results for this resource
+
 ```php
 /** @var PersonRepository */
 $repository = new PersonRepository();
 
 /** @var Illuminate\Database\Eloquent\Collection|Person[] */
-$persons = $repository->getAll();
+$persons = $repository->all();
 ```
 
 ### Create
+Create's a new resource and return the database object, if your model doesn't allow mass assigning of attributes, use `false` as the second parameter.
 ```php
 /** @var PersonRepository $repository */
 $repository = new PersonRepository();
@@ -66,21 +78,20 @@ $person = $repository->create([
 ]);
 ```
 ### Update
+Update a specific resource by it's ID, you can also pass a model instance as a second parameter.
+
 ```php
 /** @var PersonRepository $repository */
 $repository = new PersonRepository();
 
-try {
-    /** @var Person $person */
-    $person = $repository->update([
-        'name' => 'Popescu Marin',
-        'age' => 33
-    ], 1);
-} catch (RepositoryException $exception) {
-    // do something if operation fails
-}
+/** @var Person $person */
+$person = $repository->update([
+    'name' => 'Popescu Marin',
+    'age' => 33
+], 1);
 ```
 ### Delete 
+Delete a specific resource by it's ID, you can also force delete by passing `true` as the second parameter.
 ```php
 /** @var PersonRepository $repository */
 $repository = new PersonRepository();
@@ -91,6 +102,25 @@ try {
 } catch (RepositoryException $exception) {
     // do something if operation fails
 }
+```
+
+## Using helper function
+You can use the helper function by providing the FQDN of a repository or a model.
+
+If a repository exists for a given model, an instance of the repository is returned otherwise an abstract repository is returned allowing you to preform all the builtin CRUD functionality.
+
+The Person model has a PersonRepository
+```php
+/** @var PersonRepository $person */
+$personRepository = repository(PersonRepository::class);
+
+/** @var PersonRepository $person */
+$personRepository = repository(Person::class);
+```
+The Dog model doesn't have a repository
+```php
+/** @var bigpaulie\repository\Repository $dog */
+$repository = repository(Dog::class);
 ```
 
 ### Learn more 

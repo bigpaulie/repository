@@ -13,47 +13,45 @@ use Illuminate\Database\Eloquent\Model;
 interface RepositoryInterface
 {
     /**
-     * Find an existing resource
-     *
-     * @param $id
-     * @return Model
-     * @throws RepositoryException
-     */
-    public function find($id):Model;
-
-    /**
-     * Get a collection of models
+     * Get a collection of all the results.
      *
      * @return Collection
-     * @throws RepositoryException
      */
-    public function getAll():Collection;
+    public function all(): Collection;
 
     /**
-     * Create a new resource
+     * Find a model by ID
+     *
+     * @param int $id
+     * @return Model|null
+     */
+    public function find(int $id): ?Model;
+
+    /**
+     * Create an save a new instance of a model.
      *
      * @param array $attributes
+     * @param bool $mass
      * @return Model
-     * @throws RepositoryException
      */
-    public function create(array $attributes):Model;
+    public function create(array $attributes, bool $mass = false): Model;
 
     /**
-     * Update an existing resource
+     * Update a model.
      *
      * @param array $attributes
-     * @param $id
+     * @param $id_or_model
      * @return Model
-     * @throws RepositoryException
      */
-    public function update(array $attributes, $id):Model;
+    public function update(array $attributes, $id_or_model): Model;
 
     /**
-     * Delete an existing resource
+     * Delete a specific model.
      *
-     * @param $id
+     * @param $id_or_model
+     * @param bool $force
      * @return bool
      * @throws RepositoryException
      */
-    public function delete($id):bool ;
+    public function delete($id_or_model, bool $force = false):bool ;
 }

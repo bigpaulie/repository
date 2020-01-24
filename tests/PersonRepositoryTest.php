@@ -1,9 +1,12 @@
 <?php
 
+
 namespace bigpaulie\repository\tests;
 
-use bigpaulie\repository\tests\bootstrap\models\Person;
-use bigpaulie\repository\tests\stubs\PersonRepository;
+use bigpaulie\repository\AbstractRepository;
+use bigpaulie\repository\Exceptions\RepositoryException;
+use bigpaulie\repository\tests\Stubs\Models\Person;
+use bigpaulie\repository\tests\Stubs\Repositories\PersonRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -12,113 +15,121 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class PersonRepositoryTest extends TestCase
 {
-    /**
-     * @var PersonRepository
-     */
-    private $repository;
-
-    protected function setUp(): void
+    public function testPersonRepositoryInstanceShouldPass()
     {
-        parent::setUp();
-        $this->repository = new PersonRepository();
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        $this->assertInstanceOf(AbstractRepository::class, $repository);
     }
 
-    public function testFindShouldPass()
+    public function testPersonRepositoryAllShouldPass()
     {
-        /** @var Person $person */
-        $person = $this->repository->find(1);
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        $repository->create(['name' => 'Paul', 'age' => 32]);
+        $repository->create(['name' => 'Dan', 'age' => 22]);
+        $repository->create(['name' => 'Don', 'age' => 43]);
 
+        /** @var Collection $collection */
+        $collection = $repository->all();
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertCount(3, $collection);
+    }
+
+    public function testPersonRepositoryCreateShouldPass()
+    {
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        /** @var Person $person */
+        $person = $repository->create(['name' => 'Paul', 'age' => 32]);
         $this->assertInstanceOf(Person::class, $person);
-        $this->assertEquals('Popescu Ionescu', $person->name);
-        $this->assertEquals(30, $person->age);
+        $this->assertEquals('Paul', $person->name);
+        $this->assertEquals(32, $person->age);
+        $this->assertIsInt($person->id);
     }
 
-    /**
-     * @throws \bigpaulie\repository\Exceptions\RepositoryException
-     * @expectedException \bigpaulie\repository\Exceptions\RepositoryException
-     */
-    public function testFindShouldFail()
+    public function testPersonRepositoryFindShouldPass()
     {
-        /** @var Person $person */
-        $person = $this->repository->find(22);
-    }
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        $repository->create(['name' => 'Paul', 'age' => 32]);
 
-    public function testGetAllShouldPass()
-    {
-        /** @var Person[]|\Illuminate\Database\Eloquent\Collection $persons */
-        $persons = $this->repository->getAll();
-
-        $this->assertInstanceOf(Collection::class, $persons);
-        $this->assertCount(2, $persons);
-    }
-
-    public function testCreateShouldPass()
-    {
-        /** @var Person $person */
-        $person = $this->repository->create([
-            'name' => 'Popescu Ion',
-            'age' => 53
-        ]);
-
+        /** @var Person|null $person */
+        $person = $repository->find(1);
         $this->assertInstanceOf(Person::class, $person);
-        $this->assertEquals('Popescu Ion', $person->name);
-        $this->assertEquals(53, $person->age);
-        $this->assertEquals(3, $person->id);
+        $this->assertEquals('Paul', $person->name);
+        $this->assertEquals(32, $person->age);
     }
 
-    public function testUpdateShouldPass()
+    public function testPersonRepositoryUpdateByIdShouldPass()
     {
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
         /** @var Person $person */
-        $person = $this->repository->update([
-            'name' => 'Popescu Marin',
-            'age' => 54
-        ], 2);
+        $person = $repository->create(['name' => 'Paul', 'age' => 32]);
 
-        $this->assertInstanceOf(Person::class, $person);
-        $this->assertEquals('Popescu Marin', $person->name);
-        $this->assertEquals(54, $person->age);
+        /** @var Person $updated */
+        $updated = $repository->update(['name' => 'John'], $person->id);
+        $this->assertInstanceOf(Person::class, $updated);
+        $this->assertEquals('John', $updated->name);
     }
 
-    /**
-     * @throws \bigpaulie\repository\Exceptions\RepositoryException
-     * @expectedException \bigpaulie\repository\Exceptions\RepositoryException
-     */
-    public function testUpdateShouldFail()
+    public function testPersonRepositoryUpdateByModelShouldPass()
     {
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
         /** @var Person $person */
-        $person = $this->repository->update([
-            'name' => 'Popescu Marin',
-            'age' => 54
-        ], 33);
+        $person = $repository->create(['name' => 'Paul', 'age' => 32]);
+
+        /** @var Person $updated */
+        $updated = $repository->update(['name' => 'John'], $person);
+        $this->assertInstanceOf(Person::class, $updated);
+        $this->assertEquals('John', $updated->name);
     }
 
-    public function testDeleteShouldPass()
+    public function testPersonRepositoryDeleteByIdShouldPass()
     {
-        /** @var bool $person */
-        $person = $this->repository->delete(2);
-        $this->assertTrue($person);
-    }
-
-    /**
-     * @throws \bigpaulie\repository\Exceptions\RepositoryException
-     * @expectedException \bigpaulie\repository\Exceptions\RepositoryException
-     */
-    public function testDeleteShouldFail()
-    {
-        /** @var bool $person */
-        $person = $this->repository->delete(22);
-    }
-
-    public function testSearchShouldPass()
-    {
-        /** @var Collection|Person[] $persons */
-        $persons = $this->repository->search('Popescu', ['name']);
-
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
         /** @var Person $person */
-        $person = $persons->first();
+        $person = $repository->create(['name' => 'Paul', 'age' => 32]);
 
-        $this->assertInstanceOf(Collection::class, $persons);
-        $this->assertGreaterThanOrEqual(1, $persons->count());
-        $this->assertEquals('Popescu Ionescu', $person->name);
+        /** @var bool $deleted */
+        $deleted = $repository->delete($person->id);
+        $this->assertTrue($deleted);
+    }
+
+    public function testPersonRepositoryDeleteByModelShouldPass()
+    {
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        /** @var Person $person */
+        $person = $repository->create(['name' => 'Paul', 'age' => 32]);
+
+        /** @var Person $deleted */
+        $deleted = $repository->delete($person);
+        $this->assertTrue($deleted);
+    }
+
+    public function testPersonRepositoryDeleteByIdShouldFail()
+    {
+        $this->expectException(RepositoryException::class);
+        /** @var AbstractRepository $repository */
+        $repository = new PersonRepository();
+        $repository->delete(1);
+    }
+
+    public function testPersonRepositoryInstanceFromHelperShouldPass()
+    {
+        /** @var AbstractRepository $repository */
+        $repository = repository(Person::class);
+        $this->assertInstanceOf(PersonRepository::class, $repository);
+    }
+
+    public function testPersonRepositoryInstanceFromHelperByRepositoryClassShouldPass()
+    {
+        /** @var AbstractRepository $repository */
+        $repository = repository(PersonRepository::class);
+        $this->assertInstanceOf(PersonRepository::class, $repository);
     }
 }

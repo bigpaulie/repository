@@ -1,0 +1,7 @@
+<?php
+
+namespace {{repository_namespace}};
+
+use bigpaulie\repository\AbstractRepository;
+
+class {{repository_name}} extends AbstractRepository {}

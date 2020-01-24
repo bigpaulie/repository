@@ -2,7 +2,10 @@
 
 namespace bigpaulie\repository;
 
-class Repository
+/**
+ * Class Repository
+ * @package bigpaulie\repository
+ */
+class Repository extends AbstractRepository
 {
-    // Build wonderful things
 }

@@ -15,100 +15,102 @@ use Illuminate\Database\QueryException;
  */
 abstract class AbstractRepository implements RepositoryInterface
 {
-    /**
-     * @return string
-     */
-    abstract protected static function getModel():string;
+    const DEFAULT_PAGE_SIZE = 25;
 
     /**
-     * Find an existing resource
-     *
-     * @param $id
-     * @return Model
-     * @throws RepositoryException
+     * @var Model
      */
-    public function find($id): Model
+    protected $model;
+
+    /**
+     * AbstractRepository constructor.
+     * @param string|null $model
+     */
+    public function __construct(?string $model = null)
     {
-        try {
-            /** @var string $model */
-            $model = static::getModel();
-            return $model::findOrFail($id);
-        } catch (\Exception $exception) {
-            throw new RepositoryException($exception->getMessage(), $exception->getCode(), $exception);
+        if (empty($model)) {
+            $model = str_replace('Repository', '', class_basename($this));
+            $this->model = \config('repository.model_namespace') . $model;
+        } else {
+            $this->model = $model;
         }
     }
 
     /**
-     * Get a collection of models
-     *
-     * @return Collection
+     * @inheritDoc
      */
-    public function getAll(): Collection
+    public function all(): Collection
     {
-        /** @var string $model */
-        $model = static::getModel();
-        return $model::all();
+        return $this->model::all();
     }
 
     /**
-     * Create a new resource
-     *
-     * @param array $attributes
-     * @return Model
-     * @throws RepositoryException
+     * @inheritDoc
      */
-    public function create(array $attributes): Model
+    public function find(int $id): ?Model
     {
-        /** @var string $model */
-        $model = static::getModel();
+        return $this->model::query()
+            ->where('id', '=', $id)->first();
+    }
 
-        try {
-            /** @var Model $resource */
-            $resource = new $model();
-            $resource->fill($attributes);
-            $resource->saveOrFail();
-            return $resource;
-        } catch (\Throwable $e) {
-            throw new RepositoryException($e->getMessage(), 500, $e);
+    /**
+     * @inheritDoc
+     */
+    public function create(array $attributes, bool $mass = false): Model
+    {
+        /** @var Model $model */
+        $model = null;
+        if (!$mass) {
+            $model = new $this->model;
+            foreach ($attributes as $key => $attribute) {
+                $model->{$key} = $attribute;
+            }
+        } else {
+            $model = $this->model->fill($attributes);
         }
+
+        $model->save();
+        return $model;
     }
 
     /**
-     * Update an existing resource
-     *
-     * @param array $attributes
-     * @param $id
-     * @return Model
-     * @throws RepositoryException
+     * @inheritDoc
      */
-    public function update(array $attributes, $id): Model
+    public function update(array $attributes, $id_or_model): Model
     {
-        try {
-            /** @var Model $model */
-            $model = $this->find($id);
-            $model->fill($attributes);
-            $model->saveOrFail();
-
-            return $model;
-        } catch (\Throwable $e) {
-            throw new RepositoryException($e->getMessage(), 500, $e);
+        if ($id_or_model instanceof Model) {
+            $id_or_model = $id_or_model->id;
         }
+
+        $updated = $this->find($id_or_model);
+        $updated->update($attributes);
+        return $updated;
     }
 
     /**
-     * Delete an existing resource
-     *
-     * @param $id
-     * @return bool
-     * @throws RepositoryException
+     * @inheritDoc
      */
-    public function delete($id): bool
+    public function delete($id_or_model, bool $force = false): bool
     {
+        /** @var Model $model */
+        $model = null;
+        if ($id_or_model instanceof Model) {
+            $model = $id_or_model;
+        } else {
+            $model = $this->find($id_or_model);
+            if (empty($model)) {
+                throw new RepositoryException('Model not found', 404);
+            }
+        }
+
+        if ($force) {
+            return $model->forceDelete();
+        }
+
         try {
-            $this->find($id)->delete();
-            return true;
+            return $model->delete();
         } catch (\Exception $e) {
-            throw new RepositoryException($e->getMessage(), 500, $e);
+            throw new RepositoryException($e->getMessage(), $e->getCode(), $e);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace bigpaulie\repository;
 
+use bigpaulie\repository\Commands\GenerateRepository;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -52,7 +53,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         return ['repository'];
     }
-    
+
     /**
      * Console-specific booting.
      *
@@ -81,6 +82,6 @@ class RepositoryServiceProvider extends ServiceProvider
         ], 'repository.views');*/
 
         // Registering package commands.
-        // $this->commands([]);
+        $this->commands([GenerateRepository::class]);
     }
 }

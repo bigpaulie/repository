@@ -1,23 +1,31 @@
 <?php
 
-namespace bigpaulie\repository\tests;
 
-use bigpaulie\repository\tests\bootstrap\migrations\PersonMigration;
-use bigpaulie\repository\tests\bootstrap\seeders\PersonSeeder;
+namespace bigpaulie\repository\tests;
 
 /**
  * Class TestCase
  * @package bigpaulie\repository\tests
  */
-class TestCase extends \PHPUnit\Framework\TestCase
+class TestCase extends \Orchestra\Testbench\TestCase
 {
-    public static function setUpBeforeClass():void
-    {
-        with(new PersonMigration())->up();
-    }
-
     protected function setUp(): void
     {
-        with(new PersonSeeder())->run();
+        parent::setUp();
+        $this->loadMigrationsFrom(__DIR__. '/Stubs/Migrations');
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        // Setup default database to use sqlite :memory:
+        $app['config']->set('database.default', 'testbench');
+        $app['config']->set('database.connections.testbench', [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+            'prefix'   => '',
+        ]);
+
+        $app['config']->set('repository.model_namespace', 'bigpaulie\\repository\\tests\\Stubs\\Models\\');
+        $app['config']->set('repository.repository_namespace', 'bigpaulie\\repository\\tests\\Stubs\\Repositories\\');
     }
 }
